@@ -4,3 +4,4 @@ pillow
 cryptography
 opencv-python-headless
 matplotlib
+scipy
