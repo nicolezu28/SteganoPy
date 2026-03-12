@@ -3,3 +3,4 @@ numpy
 pillow
 cryptography
 opencv-python-headless
+matplotlib
