@@ -838,9 +838,9 @@ This creates a statistical anomaly in the LSB plane that the **chi-square test**
 5. Optionally, pixel selection within tiers is **pseudo-randomised using the password** as a seed.
 
 This approach is:
-- 🔬 **Statistically resistant** — the LSB distribution in smooth regions looks natural.
-- 👁️ **Perceptually optimal** — changes land where the human eye is least sensitive.
-- 🔐 **Doubly secure** when combined with AES-256 encryption.
+- **Statistically resistant** — the LSB distribution in smooth regions looks natural.
+- **Perceptually optimal** — changes land where the human eye is least sensitive.
+- **Doubly secure** when combined with AES-256 encryption.
 
 **PSNR > 40 dB** is considered visually lossless. Adaptive LSB typically achieves 48–55 dB.
 """)
