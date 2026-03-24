@@ -1,4 +1,3 @@
-# ============================================================
 #  SteganoPy — Adaptive LSB Steganography
 #  Aplicație web pentru ascunderea mesajelor în imagini
 #  folosind tehnica LSB Adaptivă (Least Significant Bit)
@@ -796,7 +795,7 @@ def chi_square_test(image):
 st.set_page_config(
     page_title="SteganoPy – Adaptive LSB",
     page_icon="🔐",
-    layout="wide"  # Layout extins pe toată lățimea ecranului
+    layout="wide"  # layout extins pe toată lățimea ecranului
 )
 
 # Titlul și descrierea principală a aplicației
