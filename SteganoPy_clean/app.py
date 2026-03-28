@@ -1,8 +1,7 @@
-# ============================================================
 #  SteganoPy — Adaptive LSB Steganography
 #  Aplicație web pentru ascunderea mesajelor în imagini
 #  folosind tehnica LSB Adaptivă (Least Significant Bit)
-# ============================================================
+
 
 # --- Importăm bibliotecile necesare ---
 import streamlit as st          # Framework pentru interfața web
@@ -30,7 +29,6 @@ def text_to_binary(text):
     """
     Convertește un șir de text în reprezentarea sa binară.
     Fiecare caracter devine un grup de 8 biți (un octet).
-    
     Exemplu: 'A' → '01000001'
     """
     return ''.join(format(ord(c), '08b') for c in text)
@@ -40,7 +38,6 @@ def binary_to_text(binary):
     """
     Convertește un șir de biți înapoi în text.
     Procesează câte 8 biți odată și îi transformă în caracterul corespunzător.
-    
     Exemplu: '01000001' → 'A'
     """
     text = ''
@@ -83,7 +80,6 @@ def binary_to_bytes(binary):
 def encrypt_message(message, password):
     """
     Criptează un mesaj text folosind algoritmul AES-256 în modul CBC.
-    
     Pași:
     1. Parola este transformată într-o cheie de 256 de biți cu SHA-256
     2. Se generează un IV (vector de inițializare) aleatoriu de 16 bytes
@@ -154,7 +150,7 @@ def decrypt_message(encrypted_message, password):
 
 
 # ─────────────────────────────────────────────
-#  ★ NUCLEUL LSB ADAPTIV
+#  NUCLEUL LSB ADAPTIV
 # ─────────────────────────────────────────────
 
 def compute_texture_map(img_array, bits_per_channel=1):
@@ -356,9 +352,9 @@ def adaptive_decode(image, password=None, bits_per_channel=1):
     return message
 
 
-# ─────────────────────────────────────────────
-#  CLASSIC LSB  (păstrat pentru comparație)
-# ─────────────────────────────────────────────
+
+#  CLASSIC LSB 
+
 
 def encode_message_classic(image, message, password=None):
     """
@@ -718,9 +714,8 @@ def make_comparison_chart(original, encoded):
     return fig
 
 
-# ─────────────────────────────────────────────
+
 #  STEGANALIZA: testul chi-pătrat pe LSB-uri
-# ─────────────────────────────────────────────
 
 def chi_square_test(image):
     """
@@ -794,45 +789,46 @@ def chi_square_test(image):
 
 # Configurăm pagina web (titlu, icon, layout)
 st.set_page_config(
-    page_title="SteganoPy – LSB Adaptiv",
+    page_title="SteganoPy – Adaptive LSB",
     page_icon="🔐",
     layout="wide"  # Layout extins pe toată lățimea ecranului
 )
 
 # Titlul și descrierea principală a aplicației
-st.title("🔐 SteganoPy — Steganografie LSB Adaptivă")
+st.title("🔐 SteganoPy — Adaptive LSB Steganography")
 st.markdown(
-    "Ascunde mesaje **doar în zonele cu textură bogată** ale unei imagini — "
-    "mult mai greu de detectat statistic față de LSB clasic."
+    "Hide messages **only in texture-rich regions** of an image — "
+    "statistically harder to detect than classic LSB."
 )
 
 # Creăm cele 8 tab-uri ale aplicației
 tabs = st.tabs([
-    "🧠 Codificare adaptivă",    # Tab 1: Codificare adaptivă
-    "🔍 Decodificare adaptivă",    # Tab 2: Decodificare adaptivă
-    "📊 Criteri de calitate",    # Tab 3: Metrici de calitate
-    "🔬 Steganaliza",       # Tab 4: Steganaliza
-    "📝 Codificare clasică",     # Tab 5: Codificare clasică
-    "🔓 Decodificare clasică",     # Tab 6: Decodificare clasică
-    "📁 Ascundere/extragere fișiere",  # Tab 7: Ascundere/extragere fișiere
-    "📦 Procesare în masă",              # Tab 8: Procesare în masă
+    "🧠 Adaptive Encode",    # Tab 1: Codificare adaptivă
+    "🔍 Adaptive Decode",    # Tab 2: Decodificare adaptivă
+    "📊 Quality Metrics",    # Tab 3: Metrici de calitate
+    "🔬 Steganalysis",       # Tab 4: Steganaliza
+    "📝 Classic Encode",     # Tab 5: Codificare clasică
+    "🔓 Classic Decode",     # Tab 6: Decodificare clasică
+    "📁 File Hide/Extract",  # Tab 7: Ascundere/extragere fișiere
+    "📦 Batch",              # Tab 8: Procesare în masă
 ])
 tab_aenc, tab_adec, tab_metrics, tab_steg, tab_cenc, tab_cdec, tab_file, tab_batch = tabs
 
-#-----------------------------------------------
+
+# ══════════════════════════════════════════════
 #  TAB 1 — CODIFICARE ADAPTIVĂ
-# ----------------------------------------------
+# ══════════════════════════════════════════════
 with tab_aenc:
-    st.header("🧠 LSB Adaptiv — Codificare")
+    st.header("🧠 Adaptive LSB — Encode")
     st.info(
-        "Această metodă analizează imaginea mai întâi cu un **filtru Laplacian**, "
-        "apoi ascunde biți **doar în pixelii cu textura cea mai complexă**. "
-        "Zonele uniforme rămân neatinse — imaginea stego este mult mai greu "
-        "de detectat statistic."
+        "This method analyses the image first with a **Laplacian edge filter**, "
+        "then hides bits **only in the most complex (textured) pixels**. "
+        "Smooth regions are left untouched — making the stego-image far harder "
+        "to detect statistically."
     )
 
-    # Widget pentru încărcarea imaginii
-    up = st.file_uploader("Încarcă imaginea copertă", type=['png','jpg','jpeg','bmp','tiff','webp'], key="aenc_img")
+    # Widget pentru încărcarea imaginii (suportă mai multe formate)
+    up = st.file_uploader("Upload cover image", type=['png','jpg','jpeg','bmp','tiff','webp'], key="aenc_img")
 
     if up:
         # Deschidem imaginea și o convertim la RGB (elimină canalul alpha dacă există)
@@ -840,29 +836,29 @@ with tab_aenc:
         col1, col2 = st.columns(2)  # Împărțim interfața în 2 coloane
 
         with col1:
-            st.subheader("Imaginea originală")
+            st.subheader("Cover Image")
             st.image(image, use_container_width=True)
 
             # Afișăm capacitatea de stocare pentru ambele metode
             cap_classic  = calculate_capacity(image)
             cap_adaptive = adaptive_capacity(image)
-            st.metric("Capacitate LSB clasic",  f"{cap_classic:,} caractere")
-            st.metric("Capacitate LSB adaptiv", f"{cap_adaptive:,} caractere", help="Doar pixelii cu textură utilizabilă")
+            st.metric("Classic LSB capacity",  f"{cap_classic:,} chars")
+            st.metric("Adaptive LSB capacity", f"{cap_adaptive:,} chars", help="Usable texture pixels only")
 
         # Slider pentru numărul de biți per canal (1 = invizibil, 3 = mai mult spațiu dar vizibil)
         bits_per_ch = st.select_slider(
-            "Biți per canal (1 = imperceptibil, 2 = capacitate 2×, 3 = zgomot ușor)",
+            "Bits per channel (1 = imperceptible, 2 = 2× capacity, 3 = slight noise)",
             options=[1, 2, 3], value=1
         )
 
         # Textbox pentru mesajul secret
-        message = st.text_area("Mesaj secret:", height=130, placeholder="Scrie mesajul tău secret aici…")
+        message = st.text_area("Secret message:", height=130, placeholder="Type your secret message here…")
 
         # Checkbox și câmp pentru parola de criptare
-        use_enc  = st.checkbox("🔐 Criptare AES-256", value=True)
+        use_enc  = st.checkbox("🔐 Encrypt with AES-256", value=True)
         password = None
         if use_enc:
-            password = st.text_input("Parolă:", type="password", key="aenc_pass")
+            password = st.text_input("Password:", type="password", key="aenc_pass")
 
         # Bara de progres care arată procentul din capacitate utilizat de mesaj
         if message:
@@ -876,17 +872,17 @@ with tab_aenc:
             capacity_bits = adaptive_capacity(image) * 8
 
             if estimated_bits > capacity_bits:
-                st.error("⚠️ Mesajul este prea lung pentru capacitatea de textură a acestei imagini.")
+                st.error("⚠️ Message is too long for this image's texture capacity.")
             else:
                 # Afișăm procentul utilizat
                 pct = estimated_bits / max(capacity_bits, 1) * 100
-                st.progress(min(pct/100, 1.0), text=f"Capacitate utilizată: {pct:.1f}%")
+                st.progress(min(pct/100, 1.0), text=f"Capacity used: {pct:.1f}%")
 
         # Butonul de codificare (dezactivat dacă lipsesc mesajul sau parola)
         disabled = not message or (use_enc and not password)
-        if st.button("🔒 Codifică adaptiv", type="primary", disabled=disabled, key="aenc_btn"):
+        if st.button("🔒 Adaptive Encode", type="primary", disabled=disabled, key="aenc_btn"):
             try:
-                with st.spinner("Analizez harta de textură și incorporez mesajul…"):
+                with st.spinner("Analysing texture map and embedding…"):
                     # Apelăm funcția principală de codificare
                     encoded = adaptive_encode(image, message,
                                               password if use_enc else None,
@@ -897,26 +893,26 @@ with tab_aenc:
                 st.session_state['last_encoded']  = encoded
 
                 with col2:
-                    st.subheader("Imaginea stego")
+                    st.subheader("Stego Image")
                     st.image(encoded, use_container_width=True)
 
                     # Calculăm și afișăm PSNR
                     psnr = calculate_psnr(image, encoded)
-                    st.metric("PSNR", f"{psnr:.2f} dB", help=">40 dB = imperceptibil vizual")
+                    st.metric("PSNR", f"{psnr:.2f} dB", help=">40 dB = visually lossless")
 
                     # Buton de descărcare pentru imaginea codificată
                     buf = io.BytesIO()
                     encoded.save(buf, format='PNG')
-                    st.download_button("⬇️ Descarcă imaginea stego", buf.getvalue(),
-                                       "stego_adaptiv.png", "image/png")
-                    st.success("✅ Mesajul a fost ascuns cu succes!")
+                    st.download_button("⬇️ Download stego image", buf.getvalue(),
+                                       "stego_adaptive.png", "image/png")
+                    st.success("✅ Message hidden successfully!")
 
             except Exception as e:
                 st.error(f"❌ {e}")
 
         # Buton separat pentru previzualizarea hărții de textură
-        if st.button("🗺️ Arată harta de textură", key="aenc_heatmap"):
-            with st.spinner("Calculez harta de textură…"):
+        if st.button("🗺️ Show Texture Map", key="aenc_heatmap"):
+            with st.spinner("Computing texture map…"):
                 fig = make_texture_heatmap(image)
             st.pyplot(fig)
             plt.close(fig)
@@ -926,9 +922,9 @@ with tab_aenc:
 #  TAB 2 — DECODIFICARE ADAPTIVĂ
 # ══════════════════════════════════════════════
 with tab_adec:
-    st.header("🔍 LSB Adaptiv — Decodificare")
+    st.header("🔍 Adaptive LSB — Decode")
 
-    up2 = st.file_uploader("Încarcă imaginea stego", type=['png','jpg','jpeg','bmp','tiff','webp'], key="adec_img")
+    up2 = st.file_uploader("Upload stego image", type=['png','jpg','jpeg','bmp','tiff','webp'], key="adec_img")
 
     if up2:
         stego = Image.open(up2).convert('RGB')
@@ -936,28 +932,28 @@ with tab_adec:
 
         # Trebuie să folosim exact aceleași setări ca la codificare!
         bits_per_ch2 = st.select_slider(
-            "Biți per canal (trebuie să corespundă cu setarea de la codificare)",
+            "Bits per channel (must match encoding setting)",
             options=[1, 2, 3], value=1, key="adec_bpc"
         )
 
         # Checkbox și câmp pentru parola (dacă mesajul a fost criptat)
-        use_dec  = st.checkbox("🔐 Mesajul este criptat", value=True, key="adec_enc")
+        use_dec  = st.checkbox("🔐 Message is encrypted", value=True, key="adec_enc")
         password2 = None
         if use_dec:
-            password2 = st.text_input("Parolă:", type="password", key="adec_pass")
+            password2 = st.text_input("Password:", type="password", key="adec_pass")
 
         # Butonul de decodificare
-        if st.button("🔓 Decodifică adaptiv", type="primary",
+        if st.button("🔓 Adaptive Decode", type="primary",
                      disabled=(use_dec and not password2), key="adec_btn"):
             try:
-                with st.spinner("Reconstruiesc ordinea pixelilor și extrag biții…"):
+                with st.spinner("Reconstructing pixel order and extracting bits…"):
                     msg = adaptive_decode(stego,
                                          password2 if use_dec else None,
                                          bits_per_channel=bits_per_ch2)
 
-                st.success("✅ Mesaj găsit!")
-                st.text_area("Mesaj ascuns:", value=msg, height=150, disabled=True)
-                st.info(f"Lungime: {len(msg)} caractere")
+                st.success("✅ Message found!")
+                st.text_area("Hidden message:", value=msg, height=150, disabled=True)
+                st.info(f"Length: {len(msg)} characters")
 
             except Exception as e:
                 st.error(f"❌ {e}")
@@ -967,19 +963,19 @@ with tab_adec:
 #  TAB 3 — METRICI DE CALITATE
 # ══════════════════════════════════════════════
 with tab_metrics:
-    st.header("📊 Metrici de calitate & Comparație vizuală")
-    st.info("Compară imaginea originală cu imaginea stego pentru a măsura imperceptibilitatea.")
+    st.header("📊 Quality Metrics & Visual Comparison")
+    st.info("Compare original vs stego image to measure imperceptibility.")
 
     # Două coloane pentru încărcarea celor două imagini
     col_a, col_b = st.columns(2)
     with col_a:
-        orig_up = st.file_uploader("Încarcă imaginea ORIGINALĂ", type=['png','jpg','jpeg','bmp'], key="met_orig")
+        orig_up = st.file_uploader("Upload ORIGINAL image", type=['png','jpg','jpeg','bmp'], key="met_orig")
     with col_b:
-        enc_up  = st.file_uploader("Încarcă imaginea STEGO (codificată)", type=['png','jpg','jpeg','bmp'], key="met_enc")
+        enc_up  = st.file_uploader("Upload STEGO (encoded) image", type=['png','jpg','jpeg','bmp'], key="met_enc")
 
     # Opțiune rapidă: folosim ultimul rezultat din Tab 1 fără a reîncărca imagini
     if 'last_original' in st.session_state and 'last_encoded' in st.session_state:
-        if st.button("📥 Folosește ultima pereche din tab-ul Codificare adaptivă"):
+        if st.button("📥 Use last encoded pair from Adaptive Encode tab"):
             orig_up = None  # Resetăm, va folosi datele din sesiune
 
     # Determinăm sursa imaginilor: sesiunea sau fișierele încărcate manual
@@ -989,7 +985,7 @@ with tab_metrics:
     if use_session:
         orig_img = st.session_state['last_original']
         enc_img  = st.session_state['last_encoded']
-        st.success("Se folosesc rezultatele ultimei codificări adaptive.")
+        st.success("Using last adaptive encode result.")
     elif orig_up and enc_up:
         orig_img = Image.open(orig_up).convert('RGB')
         enc_img  = Image.open(enc_up).convert('RGB')
@@ -1006,20 +1002,20 @@ with tab_metrics:
         # Afișăm cele 4 metrici principale în coloane
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("PSNR", f"{psnr:.2f} dB")
-        m2.metric("Diferență maximă per pixel", f"{diff.max()}")
-        m3.metric("Diferență medie per pixel", f"{diff.mean():.4f}")
-        changed = int(np.sum(np.any(diff > 0, axis=2)))
-        m4.metric("Pixeli modificați", f"{changed:,}")
+        m2.metric("Max pixel diff", f"{diff.max()}")          # Diferența maximă per pixel
+        m3.metric("Mean pixel diff", f"{diff.mean():.4f}")    # Diferența medie per pixel
+        changed = int(np.sum(np.any(diff > 0, axis=2)))       # Câți pixeli au fost modificați
+        m4.metric("Changed pixels", f"{changed:,}")
 
         # Verdictul calitativ bazat pe PSNR
-        verdict = "✅ Excelent — imperceptibil vizual" if psnr > 45 else \
-                  "✅ Bun — imperceptibil pentru ochiul uman" if psnr > 40 else \
-                  "⚠️ Acceptabil, dar poate prezenta zgomot minor" if psnr > 35 else \
-                  "❌ Degradare vizibilă"
-        st.info(f"Verdict calitate: **{verdict}**")
+        verdict = "✅ Excellent — visually lossless" if psnr > 45 else \
+                  "✅ Good — imperceptible to humans" if psnr > 40 else \
+                  "⚠️ Acceptable but may show minor noise" if psnr > 35 else \
+                  "❌ Noticeable degradation"
+        st.info(f"Quality verdict: **{verdict}**")
 
         # Generăm și afișăm graficele de comparație
-        with st.spinner("Generez graficele de comparație…"):
+        with st.spinner("Generating comparison charts…"):
             fig = make_comparison_chart(orig_img, enc_img)
         st.pyplot(fig)
         plt.close(fig)
@@ -1029,58 +1025,63 @@ with tab_metrics:
 #  TAB 4 — STEGANALIZA
 # ══════════════════════════════════════════════
 with tab_steg:
-    st.header("🔬 Steganaliza — Atacul chi-pătrat")
+    st.header("🔬 Steganalysis — Chi-Square Attack")
     st.info(
-        "**Atacul chi-pătrat** testează dacă planul LSB al unei imagini pare "
-        "'prea aleatoriu' — un semn caracteristic al steganografiei LSB secvențiale. "
-        "LSB Adaptiv distribuie biții în zonele texturate, făcând detectarea mai dificilă."
+        "The **chi-square attack** tests whether the LSB plane of an image looks "
+        "'too random' — a telltale sign of sequential LSB steganography. "
+        "Adaptive LSB distributes bits in textured regions, making it harder to detect."
     )
 
-    sa_up = st.file_uploader("Încarcă imaginea de analizat", type=['png','jpg','jpeg','bmp'], key="steg_up")
+    sa_up = st.file_uploader("Upload image to analyse", type=['png','jpg','jpeg','bmp'], key="steg_up")
 
     if sa_up:
         sa_img = Image.open(sa_up).convert('RGB')
         st.image(sa_img, width=400)
 
-        if st.button("🔬 Rulează analiza chi-pătrat", type="primary", key="steg_btn"):
-            with st.spinner("Rulez analiza statistică…"):
+        if st.button("🔬 Run Chi-Square Analysis", type="primary", key="steg_btn"):
+            with st.spinner("Running statistical analysis…"):
                 results, suspected, suspect_channels = chi_square_test(sa_img)
 
             # Afișăm rezultatele per canal în 3 coloane
-            st.subheader("Rezultate per canal")
+            st.subheader("Results per channel")
             cols = st.columns(3)
             for i, (ch, data) in enumerate(results.items()):
                 with cols[i]:
                     norm  = data['normalized']
-                    label = "🟢 Curat" if norm >= 1.5 else "🔴 Suspect"
-                    st.metric(f"Canal {ch} χ² (norm)", f"{norm:.3f}", label)
+                    # Verde = curat (normal), Roșu = suspect (prea uniform = posibil stenganografie clasică)
+                    label = "🟢 Clean" if norm >= 1.5 else "🔴 Suspicious"
+                    st.metric(f"{ch} channel χ² (norm)", f"{norm:.3f}", label)
 
             # Afișăm verdictul general
             if suspected:
                 st.error(
-                    f"⚠️ **Date ascunse suspectate!** "
-                    f"Canale cu anomalie: {', '.join(suspect_channels)}. "
-                    "Consistent cu steganografia LSB clasică secvențială."
+                    f"⚠️ **Hidden data suspected!** "
+                    f"Channels showing anomaly: {', '.join(suspect_channels)}. "
+                    "This is consistent with classic sequential LSB steganography."
                 )
             else:
                 st.success(
-                    "✅ **Nicio steganografie detectată** prin testul chi-pătrat. "
-                    "Distribuția LSB pare naturală — consistent cu LSB Adaptiv "
-                    "sau o imagine curată."
+                    "✅ **No steganography detected** by chi-square test. "
+                    "The LSB distribution appears natural — consistent with Adaptive LSB "
+                    "or a clean image."
                 )
 
+            # Vizualizăm planele LSB pentru fiecare canal de culoare
+            # Un plan LSB aleatoriu (zgomot) = imagine curată sau LSB adaptiv
+            # Un plan LSB structurat/uniform = posibil LSB clasic
             arr  = np.array(sa_img)
             fig2, axs = plt.subplots(1, 3, figsize=(12, 4))
             fig2.patch.set_facecolor('#0e1117')
-            titles = ['Planul LSB Roșu', 'Planul LSB Verde', 'Planul LSB Albastru']
+            titles = ['Red LSB plane', 'Green LSB plane', 'Blue LSB plane']
 
             for ch, (ax, title) in enumerate(zip(axs, titles)):
+                # Extragem bitul LSB din fiecare pixel și îl amplificăm la 255 pentru vizibilitate
                 lsb = (arr[:, :, ch] & 1) * 255
                 ax.imshow(lsb, cmap='gray')
                 ax.set_title(title, color='white')
                 ax.axis('off')
 
-            plt.suptitle("Planele LSB (aleatoriu = curat, structurat = date ascunse)",
+            plt.suptitle("LSB Bit Planes (random = clean, structured = hidden data)",
                          color='white', y=1.01)
             plt.tight_layout()
             st.pyplot(fig2)
@@ -1091,10 +1092,10 @@ with tab_steg:
 #  TAB 5 — CODIFICARE CLASICĂ
 # ══════════════════════════════════════════════
 with tab_cenc:
-    st.header("📝 LSB Clasic — Codificare")
-    st.warning("LSB clasic scrie biții secvențial din pixelul (0,0) — detectabil prin testul chi-pătrat. Folosește tab-ul Adaptiv pentru securitate mai bună.")
+    st.header("📝 Classic LSB — Encode")
+    st.warning("Classic LSB writes bits sequentially from pixel (0,0) — detectable by chi-square steganalysis. Use the Adaptive tab for better security.")
 
-    up_c = st.file_uploader("Încarcă imaginea copertă", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cenc_img")
+    up_c = st.file_uploader("Upload cover image", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cenc_img")
 
     if up_c:
         img_c = Image.open(up_c).convert('RGB')
@@ -1102,13 +1103,13 @@ with tab_cenc:
 
         with col1c:
             st.image(img_c, use_container_width=True)
-            st.info(f"Capacitate: {calculate_capacity(img_c):,} caractere")
+            st.info(f"Capacity: {calculate_capacity(img_c):,} chars")
 
-        msg_c  = st.text_area("Mesaj secret:", height=120, key="cenc_msg")
-        use_ec = st.checkbox("🔐 Criptare AES-256", key="cenc_enc")
-        pass_c = st.text_input("Parolă:", type="password", key="cenc_pass") if use_ec else None
+        msg_c  = st.text_area("Secret message:", height=120, key="cenc_msg")
+        use_ec = st.checkbox("🔐 AES-256 encryption", key="cenc_enc")
+        pass_c = st.text_input("Password:", type="password", key="cenc_pass") if use_ec else None
 
-        if st.button("🔒 Codifică clasic", type="primary",
+        if st.button("🔒 Classic Encode", type="primary",
                      disabled=(not msg_c or (use_ec and not pass_c)), key="cenc_btn"):
             try:
                 # Codificăm cu metoda clasică (secvențială)
@@ -1117,7 +1118,7 @@ with tab_cenc:
                     st.image(enc_c, use_container_width=True)
                     buf = io.BytesIO()
                     enc_c.save(buf, format='PNG')
-                    st.download_button("⬇️ Descarcă", buf.getvalue(), "stego_clasic.png", "image/png")
+                    st.download_button("⬇️ Download", buf.getvalue(), "stego_classic.png", "image/png")
                     st.metric("PSNR", f"{calculate_psnr(img_c, enc_c):.2f} dB")
             except Exception as e:
                 st.error(f"❌ {e}")
@@ -1127,24 +1128,24 @@ with tab_cenc:
 #  TAB 6 — DECODIFICARE CLASICĂ
 # ══════════════════════════════════════════════
 with tab_cdec:
-    st.header("🔓 LSB Clasic — Decodificare")
+    st.header("🔓 Classic LSB — Decode")
 
-    up_cd = st.file_uploader("Încarcă imaginea stego", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cdec_img")
+    up_cd = st.file_uploader("Upload stego image", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cdec_img")
 
     if up_cd:
         img_cd = Image.open(up_cd).convert('RGB')
         st.image(img_cd, width=400)
 
-        use_dcd = st.checkbox("🔐 Mesajul este criptat", key="cdec_enc")
-        pass_cd = st.text_input("Parolă:", type="password", key="cdec_pass") if use_dcd else None
+        use_dcd = st.checkbox("🔐 Message is encrypted", key="cdec_enc")
+        pass_cd = st.text_input("Password:", type="password", key="cdec_pass") if use_dcd else None
 
-        if st.button("🔓 Decodifică clasic", type="primary",
+        if st.button("🔓 Classic Decode", type="primary",
                      disabled=(use_dcd and not pass_cd), key="cdec_btn"):
             try:
                 # Extragem mesajul cu metoda clasică
                 msg_cd = decode_message_classic(img_cd, pass_cd if use_dcd else None)
-                st.success("✅ Mesaj găsit!")
-                st.text_area("Mesaj:", value=msg_cd, height=150, disabled=True)
+                st.success("✅ Message found!")
+                st.text_area("Message:", value=msg_cd, height=150, disabled=True)
             except Exception as e:
                 st.error(f"❌ {e}")
 
@@ -1153,54 +1154,59 @@ with tab_cdec:
 #  TAB 7 — ASCUNDERE / EXTRAGERE FIȘIERE
 # ══════════════════════════════════════════════
 with tab_file:
-    st.header("📁 Ascunde / Extrage un fișier")
+    st.header("📁 Hide / Extract a File")
 
     # Două sub-tab-uri: Ascunde și Extrage
-    ft1, ft2 = st.tabs(["Ascunde fișier", "Extrage fișier"])
+    ft1, ft2 = st.tabs(["Hide File", "Extract File"])
 
     with ft1:
         # Încărcăm imaginea "copertă" și fișierul de ascuns
-        fi_up = st.file_uploader("Imagine copertă", type=['png','jpg','jpeg','bmp','tiff','webp'], key="fenc_img")
-        fh_up = st.file_uploader("Fișier de ascuns (orice tip)", type=None, key="fenc_file")
+        fi_up = st.file_uploader("Cover image", type=['png','jpg','jpeg','bmp','tiff','webp'], key="fenc_img")
+        fh_up = st.file_uploader("File to hide (any type)", type=None, key="fenc_file")  # Orice tip de fișier
 
         if fi_up and fh_up:
             fi_img = Image.open(fi_up).convert('RGB')
-            fb     = fh_up.read()
+            fb     = fh_up.read()  # Citim fișierul de ascuns ca bytes bruti
 
+            # Capacitatea imaginii în bytes (minus 100 bytes rezervat pentru header)
             cap_f = (np.array(fi_img).shape[0] * np.array(fi_img).shape[1] * 3) // 8 - 100
 
             col1f, col2f = st.columns(2)
             with col1f:
                 st.image(fi_img, use_container_width=True)
-                st.info(f"Capacitate: {cap_f:,} bytes | Fișier: {len(fb):,} bytes")
+                st.info(f"Capacity: {cap_f:,} bytes | File: {len(fb):,} bytes")
                 if len(fb) > cap_f:
-                    st.error("Fișierul este prea mare!")
+                    st.error("File is too large!")
 
-            if st.button("🔒 Ascunde fișierul", type="primary", disabled=len(fb) > cap_f, key="fenc_btn"):
+            # Butonul este dezactivat dacă fișierul este prea mare
+            if st.button("🔒 Hide File", type="primary", disabled=len(fb) > cap_f, key="fenc_btn"):
                 try:
                     enc_fi = encode_file(fi_img, fb, fh_up.name)
                     with col2f:
                         st.image(enc_fi, use_container_width=True)
                         buf = io.BytesIO()
                         enc_fi.save(buf, format='PNG')
-                        st.download_button("⬇️ Descarcă", buf.getvalue(),
-                                           f"stego_fisier_{fh_up.name}.png", "image/png")
-                        st.success("✅ Fișier ascuns cu succes!")
+                        st.download_button("⬇️ Download", buf.getvalue(),
+                                           f"stego_file_{fh_up.name}.png", "image/png")
+                        st.success("✅ File hidden!")
                 except Exception as e:
                     st.error(f"❌ {e}")
 
     with ft2:
-        fd_up = st.file_uploader("Imagine stego cu fișier ascuns", type=['png','jpg','jpeg','bmp','tiff','webp'], key="fdec_img")
+        # Extractarea fișierului din imagine
+        fd_up = st.file_uploader("Stego image with hidden file", type=['png','jpg','jpeg','bmp','tiff','webp'], key="fdec_img")
 
         if fd_up:
             fd_img = Image.open(fd_up).convert('RGB')
             st.image(fd_img, width=400)
 
-            if st.button("🔓 Extrage fișierul", type="primary", key="fdec_btn"):
+            if st.button("🔓 Extract File", type="primary", key="fdec_btn"):
                 try:
+                    # Extragem fișierul (returnează datele binare și numele original)
                     data, fname = decode_file(fd_img)
-                    st.success(f"✅ Extras: {fname} ({len(data):,} bytes)")
-                    st.download_button(f"⬇️ Descarcă {fname}", data, fname, "application/octet-stream")
+                    st.success(f"✅ Extracted: {fname} ({len(data):,} bytes)")
+                    # Buton de descărcare cu tipul MIME generic pentru orice fișier
+                    st.download_button(f"⬇️ Download {fname}", data, fname, "application/octet-stream")
                 except Exception as e:
                     st.error(f"❌ {e}")
 
@@ -1209,24 +1215,24 @@ with tab_file:
 #  TAB 8 — PROCESARE ÎN MASĂ (BATCH)
 # ══════════════════════════════════════════════
 with tab_batch:
-    st.header("📦 Procesare în masă")
-    st.info("Ascunde același mesaj în mai multe imagini simultan — folosește LSB Adaptiv.")
+    st.header("📦 Batch Encoding")
+    st.info("Hide the same message in multiple images at once — uses Adaptive LSB.")
 
     # Permitem încărcarea mai multor imagini simultan
-    batch_imgs = st.file_uploader("Încarcă imagini", type=['png','jpg','jpeg','bmp','tiff','webp'],
+    batch_imgs = st.file_uploader("Upload images", type=['png','jpg','jpeg','bmp','tiff','webp'],
                                    accept_multiple_files=True, key="batch_imgs")
 
     if batch_imgs:
-        st.success(f"{len(batch_imgs)} imagini încărcate")
+        st.success(f"{len(batch_imgs)} images uploaded")
 
-        b_msg  = st.text_area("Mesaj de ascuns în toate imaginile:", height=100, key="b_msg")
-        b_enc  = st.checkbox("🔐 Criptare AES-256", key="b_enc")
-        b_pass = st.text_input("Parolă:", type="password", key="b_pass") if b_enc else None
-        b_bpc  = st.select_slider("Biți per canal", options=[1,2,3], value=1, key="b_bpc")
+        b_msg  = st.text_area("Message to hide in all images:", height=100, key="b_msg")
+        b_enc  = st.checkbox("🔐 AES-256 encryption", key="b_enc")
+        b_pass = st.text_input("Password:", type="password", key="b_pass") if b_enc else None
+        b_bpc  = st.select_slider("Bits per channel", options=[1,2,3], value=1, key="b_bpc")
 
         disabled_b = not b_msg or (b_enc and not b_pass)
 
-        if st.button("🔒 Codifică toate", type="primary", disabled=disabled_b, key="batch_btn"):
+        if st.button("🔒 Encode All", type="primary", disabled=disabled_b, key="batch_btn"):
             progress = st.progress(0)   # Bara de progres (0-100%)
             zip_buf  = io.BytesIO()     # Buffer pentru arhiva ZIP în memorie
             ok = err = 0                # Contoare pentru imagini reușite/eșuate
@@ -1247,7 +1253,7 @@ with tab_batch:
 
                         # Adăugăm fișierul PNG în arhiva ZIP (fără extensia originală)
                         base = os.path.splitext(img_f.name)[0]
-                        zf.writestr(f"{base}_stego_adaptiv.png", ibuf.getvalue())
+                        zf.writestr(f"{base}_adaptive_stego.png", ibuf.getvalue())
                         ok += 1
 
                     except Exception as e:
@@ -1263,8 +1269,8 @@ with tab_batch:
                 # Generăm un timestamp pentru numele unic al arhivei
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                 zip_buf.seek(0)  # Resetăm cursorul arhivei la început
-                st.success(f"✅ {ok} imagini codificate ({err} eșuate)")
-                st.download_button("⬇️ Descarcă ZIP", zip_buf.getvalue(),
+                st.success(f"✅ {ok} images encoded ({err} failed)")
+                st.download_button("⬇️ Download ZIP", zip_buf.getvalue(),
                                    f"batch_stego_{ts}.zip", "application/zip")
 
 
@@ -1273,22 +1279,22 @@ with tab_batch:
 # ─────────────────────────────────────────────
 st.markdown("---")
 st.markdown("""
-### 📖 Cum funcționează LSB Adaptiv
+### 📖 How Adaptive LSB works
 
-**LSB Clasic** scrie biții secvențial începând cu pixelul (0,0).  
-Aceasta creează o anomalie statistică în planul LSB, detectabilă prin **testul chi-pătrat**.
+**Classic LSB** writes bits sequentially starting at pixel (0,0).  
+This creates a statistical anomaly in the LSB plane that the **chi-square test** can detect.
 
-**LSB Adaptiv** (această implementare):
-1. Aplică un **filtru Laplacian** pentru a calcula un scor de complexitate per pixel.
-2. Sortează toți pixelii de la cel mai complex la cel mai simplu.
-3. Înglobează biți **doar în cei mai complecși pixeli** — muchii, colțuri, zgomot.
-4. Zonele uniforme (cer, pereți) rămân complet neatinse.
-5. Opțional, selecția pixelilor este **pseudo-randomizată folosind parola** ca sămânță.
+**Adaptive LSB** (this implementation):
+1. Applies a **Laplacian edge filter** to compute a per-pixel complexity score.
+2. Ranks all pixels from most to least textured.
+3. Embeds bits **only in the top-N most complex pixels** — edges, corners, noise.
+4. Smooth regions (sky, walls) are completely untouched.
+5. Optionally, pixel selection within tiers is **pseudo-randomised using the password** as a seed.
 
-Avantaje:
-- 🔬 **Rezistent statistic** — distribuția LSB în zonele uniforme pare naturală.
-- 👁️ **Optim perceptual** — modificările cad acolo unde ochiul uman este cel mai puțin sensibil.
-- 🔐 **Dublu securizat** când e combinat cu criptare AES-256.
+This approach is:
+- 🔬 **Statistically resistant** — the LSB distribution in smooth regions looks natural.
+- 👁️ **Perceptually optimal** — changes land where the human eye is least sensitive.
+- 🔐 **Doubly secure** when combined with AES-256 encryption.
 
-**PSNR > 40 dB** este considerat imperceptibil vizual. LSB Adaptiv atinge tipic 48–55 dB.
+**PSNR > 40 dB** is considered visually lossless. Adaptive LSB typically achieves 48–55 dB.
 """)
