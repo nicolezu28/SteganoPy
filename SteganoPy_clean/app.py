@@ -28,27 +28,39 @@ from scipy import ndimage       # Filtre matematice pe imagini (ex: Laplacian)
 
 def text_to_binary(text):
     """
-    Convertește un șir de text în reprezentarea sa binară.
-    Fiecare caracter devine un grup de 8 biți (un octet).
+    Convertește un șir de text în reprezentarea sa binară folosind UTF-8.
+    Fiecare byte UTF-8 devine un grup de 8 biți.
+    
+    FIXED: Acum gestionează corect caracterele Unicode (ă, â, î, ș, ț, emoji, etc.)
+    convertind mai întâi textul în bytes UTF-8, apoi în binar.
     
     Exemplu: 'A' → '01000001'
+             'ă' (U+0103) → '1100010010000011' (2 bytes UTF-8: C4 83)
     """
-    return ''.join(format(ord(c), '08b') for c in text)
+    # Convertim textul în bytes UTF-8, apoi fiecare byte în 8 biți
+    return ''.join(format(b, '08b') for b in text.encode('utf-8'))
 
 
 def binary_to_text(binary):
     """
-    Convertește un șir de biți înapoi în text.
-    Procesează câte 8 biți odată și îi transformă în caracterul corespunzător.
+    Convertește un șir de biți înapoi în text folosind UTF-8.
+    Procesează câte 8 biți odată (bytes), apoi decodifică UTF-8.
+    
+    FIXED: Acum gestionează corect caracterele Unicode decodificând
+    bytes-urile ca UTF-8.
     
     Exemplu: '01000001' → 'A'
+             '1100010010000011' → 'ă' (2 bytes UTF-8: C4 83 → U+0103)
     """
-    text = ''
+    # Construim un bytearray din biți (câte 8 biți = 1 byte)
+    byte_array = bytearray()
     for i in range(0, len(binary), 8):
-        byte = binary[i:i+8]   # Luăm câte 8 biți pe rând
-        if len(byte) == 8:     # Ignorăm grupurile incomplete (la final)
-            text += chr(int(byte, 2))  # Convertim binarul în număr, apoi în caracter
-    return text
+        byte = binary[i:i+8]
+        if len(byte) == 8:  # Ignorăm grupurile incomplete (la final)
+            byte_array.append(int(byte, 2))  # Convertim 8 biți în număr (0-255)
+    
+    # Decodificăm bytes-urile ca UTF-8 și returnăm textul
+    return bytes(byte_array).decode('utf-8')
 
 
 def bytes_to_binary(data):
