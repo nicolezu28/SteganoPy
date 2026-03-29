@@ -168,10 +168,22 @@ def compute_texture_map(img_array, bits_per_channel=1):
     Filtrul Laplacian detectează schimbările bruște de intensitate (muchii).
     Cu cât valoarea este mai mare, cu atât pixelul este mai "texturat".
     
+    IMPORTANT: Mascăm biții LSB înainte de calculul Laplacianului!
+    Aceasta asigură că harta de textură este IDENTICĂ înainte și după
+    codificarea mesajului. Fără această mascare, codificatorul și
+    decodificatorul ar vedea hărți de textură diferite, ducând la
+    ordini diferite ale pixelilor și, implicit, la decodare eșuată.
+    
     Returnează: matricea de magnitudini (scor per pixel)
     """
-    # Convertim imaginea color în nuanțe de gri (media canalelor R, G, B)
-    gray = np.mean(img_array, axis=2).astype(np.float32)
+    # Mascăm biții cel mai puțin semnificativi — aceștia sunt cei pe care
+    # îi modificăm la codificare, deci trebuie ignorați la calculul texturii
+    # Exemplu: pentru 1 bit/canal, masca = 0xFE = 11111110
+    mask = np.uint8(0xFF ^ ((1 << bits_per_channel) - 1))
+    cleaned = (img_array & mask).astype(np.float32)
+
+    # Convertim imaginea curățată în nuanțe de gri (media canalelor R, G, B)
+    gray = np.mean(cleaned, axis=2)
 
     # Aplicăm filtrul Laplacian pentru a detecta muchiile și textura
     lap = ndimage.laplace(gray)
@@ -190,9 +202,14 @@ def build_pixel_order(magnitude, img_array, bits_needed, bits_per_channel,
     
     Strategia:
     - Sortăm pixelii de la cel mai complex (mult texturat) la cel mai simplu
+    - Dacă există o parolă, amestecăm TOȚI pixelii (nu doar subsetul!) pentru
+      a asigura consistența cu decodificatorul
     - Selectăm doar câți pixeli sunt necesari pentru mesaj
-    - Dacă există o parolă, amestecăm pozițiile folosind parola ca sămânță
-      aleatorie → biții sunt împrăștiați mai aleatoriu, mai greu de detectat
+    
+    IMPORTANT: Amestecarea trebuie făcută pe TOȚI pixelii sortați ÎNAINTE de
+    selecția subsetului. Decodificatorul face aceeași amestecarea pe toți pixelii
+    (fiindcă nu știe lungimea mesajului). Dacă am amesteca doar subsetul,
+    ordinea ar fi diferită între codificator și decodificator.
     
     Aruncă excepție dacă imaginea este prea mică pentru mesaj.
     """
@@ -203,6 +220,15 @@ def build_pixel_order(magnitude, img_array, bits_needed, bits_per_channel,
     flat_mag = magnitude.flatten()
     sorted_px = np.argsort(flat_mag)[::-1]  # argsort crescător, inversăm cu [::-1]
 
+    # IMPORTANT: Amestecăm TOȚI pixelii ÎNAINTE de selecția subsetului
+    # Aceasta asigură consistența: decodificatorul face aceeași amestecarea
+    # pe toți pixelii cu aceeași sămânță → obține aceeași ordine
+    if password:
+        rng = np.random.default_rng(
+            int(hashlib.sha256(password.encode()).hexdigest(), 16) % (2**32)
+        )
+        rng.shuffle(sorted_px)
+
     # Calculăm câți pixeli avem nevoie (fiecare pixel are 3 canale × biți_per_canal)
     pixels_needed = int(np.ceil(bits_needed / (bits_per_channel * channels_used)))
 
@@ -212,26 +238,60 @@ def build_pixel_order(magnitude, img_array, bits_needed, bits_per_channel,
             f"Message too long! Need {pixels_needed} pixels but image only has {h*w}."
         )
 
-    # Luăm doar pixelii necesari (cei mai complecși)
+    # Luăm doar pixelii necesari din array-ul (deja amestecat, dacă parolă)
     selected_px = sorted_px[:pixels_needed]
 
-    # Dacă avem parolă, amestecăm ordinea pixelilor în mod reproductibil
-    # Aceeași parolă → aceeași ordine → putem extrage mesajul mai târziu
+    # Expandăm fiecare pixel în trei poziții: (rând, coloană, canal_R/G/B)
+    # Folosim NumPy vectorizat în loc de buclă Python → mult mai rapid și eficient
+    rows = (selected_px // w).astype(np.int32)
+    cols = (selected_px % w).astype(np.int32)
+
+    # Repetăm fiecare pixel de 3 ori (câte o intrare per canal R, G, B)
+    rows_exp = np.repeat(rows, channels_used)
+    cols_exp = np.repeat(cols, channels_used)
+    # Canalele ciclează: 0, 1, 2, 0, 1, 2, ...
+    chs_exp  = np.tile(np.arange(channels_used, dtype=np.int32), len(selected_px))
+
+    # Returnăm ca matrice NumPy (N×3) — mult mai puțină memorie decât lista de tuple Python
+    return np.column_stack([rows_exp, cols_exp, chs_exp])
+
+
+def build_pixel_order_generator(magnitude, img_array, bits_per_channel,
+                                password=None):
+    """
+    Versiune GENERATOR a funcției build_pixel_order, optimizată pentru DECODARE.
+    
+    La decodare nu știm câți biți are mesajul, deci trebuie să parcurgem
+    pixelii pe rând până găsim delimitatorul. Generatorul produce pozițiile
+    câte una, fără a le stoca pe toate în memorie.
+    
+    Aceasta rezolvă problema de memorie: o imagine de 4000×3000 pixeli ar
+    necesita ~2.6 GB RAM pentru lista completă de tuple Python, dar generatorul
+    folosește doar ~48 MB (array-ul NumPy sortat).
+    
+    CONSISTENȚĂ: Amestecarea se face pe TOȚI pixelii sortați — exact ca în
+    build_pixel_order — asigurând că primele N poziții sunt identice cu cele
+    folosite la codificare.
+    """
+    h, w, c = img_array.shape
+    channels_used = 3
+
+    flat_mag = magnitude.flatten()
+    sorted_px = np.argsort(flat_mag)[::-1]
+
+    # Amestecăm TOȚI pixelii cu aceeași sămânță → aceeași ordine ca la codificare
     if password:
         rng = np.random.default_rng(
             int(hashlib.sha256(password.encode()).hexdigest(), 16) % (2**32)
         )
-        rng.shuffle(selected_px)
+        rng.shuffle(sorted_px)
 
-    # Expandăm fiecare pixel în trei poziții: (rând, coloană, canal_R/G/B)
-    positions = []
-    for px_idx in selected_px:
-        row = px_idx // w   # Calculăm rândul din indexul aplatizat
-        col = px_idx % w    # Calculăm coloana din indexul aplatizat
+    # Producem pozițiile câte una — fără a construi o listă imensă
+    for px_idx in sorted_px:
+        row = int(px_idx) // w
+        col = int(px_idx) % w
         for ch in range(channels_used):
-            positions.append((row, col, ch))
-
-    return positions
+            yield (row, col, ch)
 
 
 def adaptive_encode(image, message, password=None, bits_per_channel=1):
@@ -268,7 +328,8 @@ def adaptive_encode(image, message, password=None, bits_per_channel=1):
                                   bits_per_channel, password)
 
     # Verificare de siguranță: avem suficient spațiu?
-    if len(positions) * bits_per_channel < bits_needed:
+    # positions este acum o matrice NumPy (N×3), deci folosim .shape[0] pentru numărul de rânduri
+    if positions.shape[0] * bits_per_channel < bits_needed:
         raise ValueError("Not enough texture capacity in this image for the message.")
 
     bit_idx = 0
@@ -307,34 +368,46 @@ def adaptive_decode(image, password=None, bits_per_channel=1):
     5. Convertim biții în text
     6. (Opțional) Decriptăm textul dacă există parolă
     
+    OPTIMIZARE: Folosim un generator pentru poziții (nu construim toată lista
+    în memorie) și o listă Python pentru acumularea biților (în loc de
+    concatenare de string-uri care este O(n²)).
+    
     Aruncă excepție dacă nu găsește mesaj sau parola este greșită.
     """
     img_array = np.array(image)
 
     DELIMITER        = "###END###"
     delimiter_binary = text_to_binary(DELIMITER)
+    delim_len        = len(delimiter_binary)
 
-    # Calculăm numărul maxim de biți pe care i-am putea citi din imagine
-    max_bits = img_array.shape[0] * img_array.shape[1] * 3 * bits_per_channel
-
-    # Recalculăm harta de textură și ordinea pixelilor (exact ca la codificare)
+    # Recalculăm harta de textură
     magnitude = compute_texture_map(img_array, bits_per_channel)
-    positions = build_pixel_order(magnitude, img_array, max_bits,
-                                  bits_per_channel, password)
 
-    binary_message = ''
-    # Masca pentru extragerea LSB-urilor: ex. pentru 1 bit → 0x01
-    bit_mask = (1 << bits_per_channel) - 1
+    # Folosim GENERATORUL — produce poziții câte una, fără a le stoca pe toate
+    # Aceasta economisește ~2 GB RAM pentru imaginile mari (vs. build_pixel_order)
+    positions = build_pixel_order_generator(magnitude, img_array,
+                                           bits_per_channel, password)
+
+    # Acumulăm biții într-o listă (append = O(1)) în loc de string (concat = O(n))
+    bits_list = []
+    bit_mask  = (1 << bits_per_channel) - 1
 
     for (r, c, ch) in positions:
         # Citim bitul/biții LSB din pixelul curent
         val = int(img_array[r, c, ch]) & bit_mask
-        binary_message += format(val, f'0{bits_per_channel}b')
+        bits_list.append(format(val, f'0{bits_per_channel}b'))
 
         # Verificăm dacă am găsit delimitatorul de final după fiecare caracter complet
-        if len(binary_message) % 8 == 0 and len(binary_message) >= len(delimiter_binary):
-            if binary_message[-len(delimiter_binary):] == delimiter_binary:
+        total_bits = len(bits_list) * bits_per_channel
+        if total_bits % 8 == 0 and total_bits >= delim_len:
+            # Construim doar sfârșitul string-ului pentru comparație
+            # (nu concatenăm tot la fiecare pas)
+            tail = ''.join(bits_list[-(delim_len // bits_per_channel):])
+            if tail[-delim_len:] == delimiter_binary:
                 break  # Am găsit sfârșitul mesajului, ne oprim
+
+    # Concatenăm o singură dată la final (eficient)
+    binary_message = ''.join(bits_list)
 
     # Dacă nu există delimitator, imaginea nu conține un mesaj valid
     if delimiter_binary not in binary_message:
