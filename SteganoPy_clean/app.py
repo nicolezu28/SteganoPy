@@ -908,7 +908,7 @@ tab_aenc, tab_adec, tab_metrics, tab_steg, tab_cenc, tab_cdec, tab_file, tab_bat
 #  TAB 1 — CODIFICARE ADAPTIVĂ
 # ----------------------------------------------
 with tab_aenc:
-    st.header("🧠 LSB Adaptiv — Codificare")
+    st.header("LSB Adaptiv — Codificare")
     st.info(
         "Această metodă analizează imaginea mai întâi cu un **filtru Laplacian**, "
         "apoi ascunde biți **doar în pixelii cu textura cea mai complexă**. "
@@ -1011,7 +1011,7 @@ with tab_aenc:
 #  TAB 2 — DECODIFICARE ADAPTIVĂ
 # ══════════════════════════════════════════════
 with tab_adec:
-    st.header("🔍 LSB Adaptiv — Decodificare")
+    st.header("LSB Adaptiv — Decodificare")
 
     up2 = st.file_uploader("Încarcă imaginea stego", type=['png','jpg','jpeg','bmp','tiff','webp'], key="adec_img")
 
@@ -1052,7 +1052,7 @@ with tab_adec:
 #  TAB 3 — METRICI DE CALITATE
 # ══════════════════════════════════════════════
 with tab_metrics:
-    st.header("📊 Metrici de calitate & Comparație vizuală")
+    st.header("Metrici de calitate & Comparație vizuală")
     st.info("Compară imaginea originală cu imaginea stego pentru a măsura imperceptibilitatea.")
 
     # Două coloane pentru încărcarea celor două imagini
@@ -1114,7 +1114,7 @@ with tab_metrics:
 #  TAB 4 — STEGANALIZA
 # ══════════════════════════════════════════════
 with tab_steg:
-    st.header("🔬 Steganaliza — Atacul chi-pătrat")
+    st.header("Steganaliza — Atacul chi-pătrat")
     st.info(
         "**Atacul chi-pătrat** testează dacă planul LSB al unei imagini pare "
         "'prea aleatoriu' — un semn caracteristic al steganografiei LSB secvențiale. "
@@ -1176,7 +1176,7 @@ with tab_steg:
 #  TAB 5 — CODIFICARE CLASICĂ
 # ══════════════════════════════════════════════
 with tab_cenc:
-    st.header("📝 LSB Clasic — Codificare")
+    st.header("LSB Clasic — Codificare")
     st.warning("LSB clasic scrie biții secvențial din pixelul (0,0) — detectabil prin testul chi-pătrat. Folosește tab-ul Adaptiv pentru securitate mai bună.")
 
     up_c = st.file_uploader("Încarcă imaginea copertă", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cenc_img")
@@ -1212,7 +1212,7 @@ with tab_cenc:
 #  TAB 6 — DECODIFICARE CLASICĂ
 # ══════════════════════════════════════════════
 with tab_cdec:
-    st.header("🔓 LSB Clasic — Decodificare")
+    st.header("LSB Clasic — Decodificare")
 
     up_cd = st.file_uploader("Încarcă imaginea stego", type=['png','jpg','jpeg','bmp','tiff','webp'], key="cdec_img")
 
@@ -1238,7 +1238,7 @@ with tab_cdec:
 #  TAB 7 — ASCUNDERE / EXTRAGERE FIȘIERE
 # ══════════════════════════════════════════════
 with tab_file:
-    st.header("📁 Ascunde / Extrage un fișier")
+    st.header("Ascunde / Extrage un fișier")
 
     # Două sub-tab-uri: Ascunde și Extrage
     ft1, ft2 = st.tabs(["Ascunde fișier", "Extrage fișier"])
@@ -1294,7 +1294,7 @@ with tab_file:
 #  TAB 8 — PROCESARE ÎN MASĂ (BATCH)
 # ══════════════════════════════════════════════
 with tab_batch:
-    st.header("📦 Procesare în masă")
+    st.header("Procesare în masă")
     st.info("Ascunde același mesaj în mai multe imagini simultan — folosește LSB Adaptiv.")
 
     # Permitem încărcarea mai multor imagini simultan
@@ -1358,7 +1358,7 @@ with tab_batch:
 # ─────────────────────────────────────────────
 st.markdown("---")
 st.markdown("""
-### 📖 Cum funcționează LSB Adaptiv
+### Cum funcționează LSB Adaptiv
 
 **LSB Clasic** scrie biții secvențial începând cu pixelul (0,0).  
 Aceasta creează o anomalie statistică în planul LSB, detectabilă prin **testul chi-pătrat**.
@@ -1371,9 +1371,9 @@ Aceasta creează o anomalie statistică în planul LSB, detectabilă prin **test
 5. Opțional, selecția pixelilor este **pseudo-randomizată folosind parola** ca sămânță.
 
 Avantaje:
-- 🔬 **Rezistent statistic** — distribuția LSB în zonele uniforme pare naturală.
-- 👁️ **Optim perceptual** — modificările cad acolo unde ochiul uman este cel mai puțin sensibil.
-- 🔐 **Dublu securizat** când e combinat cu criptare AES-256.
+-  **Rezistent statistic** — distribuția LSB în zonele uniforme pare naturală.
+-  **Optim perceptual** — modificările cad acolo unde ochiul uman este cel mai puțin sensibil.
+-  **Dublu securizat** când e combinat cu criptare AES-256.
 
 **PSNR > 40 dB** este considerat imperceptibil vizual. LSB Adaptiv atinge tipic 48–55 dB.
 """)
