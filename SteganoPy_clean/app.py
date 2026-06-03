@@ -707,16 +707,16 @@ def make_texture_heatmap(image):
 
     # Creăm figura cu 3 subplot-uri alăturate
     fig, axes = plt.subplots(1, 3, figsize=(14, 4))
-    fig.patch.set_facecolor('#0e1117')  # Fundal întunecat (tema Streamlit)
+    fig.patch.set_facecolor('#838485')  # Fundal întunecat (tema Streamlit)
 
     # Panoul 1: imaginea originală
     axes[0].imshow(image)
-    axes[0].set_title("Original Image", color='white', fontsize=11)
+    axes[0].set_title("Imaginea Originală", color='white', fontsize=11)
     axes[0].axis('off')
 
     # Panoul 2: harta de textură (gradient de culori — roșu = complex, negru = simplu)
     im = axes[1].imshow(mag, cmap='hot', interpolation='nearest')
-    axes[1].set_title("Texture / Edge Map (Laplacian)", color='white', fontsize=11)
+    axes[1].set_title("Hartă de textură și muchii (Laplacian)", color='white', fontsize=11)
     axes[1].axis('off')
     plt.colorbar(im, ax=axes[1])  # Adăugăm bara de culori pentru interpretare
 
@@ -727,7 +727,7 @@ def make_texture_heatmap(image):
     # Întunecem pixelii care NU vor fi utilizați (la 25% din luminozitate)
     overlay[~mask] = (overlay[~mask] * 0.25).astype(np.uint8)
     axes[2].imshow(overlay)
-    axes[2].set_title("Pixels used for hiding (bright)", color='white', fontsize=11)
+    axes[2].set_title("Pixeli folosiți pentru ascundere (luminoși)", color='white', fontsize=10)
     axes[2].axis('off')
 
     for ax in axes:
