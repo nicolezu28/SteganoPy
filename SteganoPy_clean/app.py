@@ -757,7 +757,7 @@ def make_comparison_chart(original, encoded):
 
     # Creăm layout-ul figurii: 2 rânduri, 3 coloane (ultimul rând se întinde pe toate)
     fig = plt.figure(figsize=(14, 8))
-    fig.patch.set_facecolor('#0e1117')
+    fig.patch.set_facecolor('#838485')
     gs  = gridspec.GridSpec(2, 3, figure=fig)
 
     # Imaginea originală
@@ -775,7 +775,7 @@ def make_comparison_chart(original, encoded):
     # Diferența amplificată ×50 (altfel ar fi aproape negru total)
     ax3 = fig.add_subplot(gs[0, 2])
     im3 = ax3.imshow(diff.astype(np.uint8) * 50, cmap='hot')
-    ax3.set_title("Difference (×50)", color='white')
+    ax3.set_title("Diferențe (×50)", color='white')
     ax3.axis('off')
     plt.colorbar(im3, ax=ax3)
 
