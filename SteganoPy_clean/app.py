@@ -665,12 +665,12 @@ def calculate_capacity(image):
     return (arr.shape[0] * arr.shape[1] * 3) // 8 - 10
 
 
-def adaptive_capacity(image, threshold_pct=50):
+def adaptive_capacity(image, threshold_pct=):
     """
     Calculează câte caractere pot fi ascunse cu metoda LSB Adaptivă,
-    folosind doar cei mai complecși 50% dintre pixeli.
+    folosind doar cei mai complecși % dintre pixeli.
     
-    Parametru threshold_pct: procentul pixelilor utilizați (implicit 50%)
+    Parametru threshold_pct: procentul pixelilor utilizați (implicit %)
     → mai mare = mai multă capacitate, dar mai ușor de detectat
     
     Returnează numărul de caractere pentru metoda adaptivă.
@@ -774,7 +774,7 @@ def make_comparison_chart(original, encoded):
 
     # Diferența amplificată ×50 (altfel ar fi aproape negru total)
     ax3 = fig.add_subplot(gs[0, 2])
-    im3 = ax3.imshow(diff.astype(np.uint8) * 70, cmap='hot')
+    im3 = ax3.imshow(diff.astype(np.uint8) * 90, cmap='hot')
     ax3.set_title("Diferențe (×50)", color='white')
     ax3.axis('off')
     plt.colorbar(im3, ax=ax3)
