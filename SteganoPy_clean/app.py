@@ -774,7 +774,7 @@ def make_comparison_chart(original, encoded):
 
     # Diferența amplificată ×50 (altfel ar fi aproape negru total)
     ax3 = fig.add_subplot(gs[0, 2])
-    im3 = ax3.imshow(diff.astype(np.uint8) * 90, cmap='hot')
+    im3 = ax3.imshow(diff.astype(np.uint8) * 80, cmap='hot')
     ax3.set_title("Diferențe (×50)", color='white')
     ax3.axis('off')
     plt.colorbar(im3, ax=ax3)
